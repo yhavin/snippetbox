@@ -15,14 +15,14 @@ import (
 
 type application struct {
 	errorLog *log.Logger
-	infoLog *log.Logger
+	infoLog  *log.Logger
 	snippets *models.SnippetModel
 }
 
 func main() {
 	addr := flag.String("addr", ":4000", "HTTP network address")
 	dummyDbPassword := "testpw123"
-	dsn := flag.String("dsn", fmt.Sprintf("web:%s@/snippetbox?parseTime=true", dummyDbPassword), "MySQL data source name")  // Dummy db password hardcoded
+	dsn := flag.String("dsn", fmt.Sprintf("web:%s@/snippetbox?parseTime=true", dummyDbPassword), "MySQL data source name") // Dummy db password hardcoded
 
 	flag.Parse()
 
@@ -38,14 +38,14 @@ func main() {
 
 	app := &application{
 		errorLog: errorLog,
-		infoLog: infoLog,
+		infoLog:  infoLog,
 		snippets: &models.SnippetModel{DB: db},
 	}
 
 	srv := &http.Server{
-		Addr: *addr,
+		Addr:     *addr,
 		ErrorLog: errorLog,
-		Handler: app.routes(),
+		Handler:  app.routes(),
 	}
 
 	infoLog.Printf("Starting server on %s", *addr)
