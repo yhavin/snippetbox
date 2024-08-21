@@ -16,6 +16,7 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/joho/godotenv"
 )
 
 type application struct {
@@ -28,14 +29,22 @@ type application struct {
 }
 
 func main() {
+	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
+	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
+
+	err := godotenv.Load()
+	if err != nil {
+		errorLog.Fatal(err)
+	}
+
 	addr := flag.String("addr", ":4000", "HTTP network address")
-	dummyDbPassword := "testpw123"
+	dummyDbPassword := os.Getenv("DUMMY_DB_PASSWORD")
+	if dummyDbPassword == "" {
+		errorLog.Fatal("DUMMY_DB_PASSWORD environment variable not set")
+	}
 	dsn := flag.String("dsn", fmt.Sprintf("web:%s@/snippetbox?parseTime=true", dummyDbPassword), "MySQL data source name") // Dummy db password hardcoded
 
 	flag.Parse()
-
-	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
-	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
 	db, err := openDB(*dsn)
 	if err != nil {
