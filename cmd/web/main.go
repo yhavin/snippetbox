@@ -21,6 +21,7 @@ import (
 )
 
 type application struct {
+	debug          bool
 	errorLog       *log.Logger
 	infoLog        *log.Logger
 	snippets       models.SnippetModelInterface
@@ -40,6 +41,7 @@ func main() {
 	}
 
 	addr := flag.String("addr", ":4000", "HTTP network address")
+
 	dummyDbUser := os.Getenv("DUMMY_DB_USER")
 	dummyDbPassword := os.Getenv("DUMMY_DB_PASSWORD")
 	if dummyDbUser == "" {
@@ -49,6 +51,8 @@ func main() {
 		errorLog.Fatal("DUMMY_DB_PASSWORD environment variable not set")
 	}
 	dsn := flag.String("dsn", fmt.Sprintf("%s:%s@/snippetbox?parseTime=true", dummyDbUser, dummyDbPassword), "MySQL data source name")
+
+	debug := flag.Bool("debug", false, "Enable debug mode")
 
 	flag.Parse()
 
@@ -71,6 +75,7 @@ func main() {
 	sessionManager.Cookie.Secure = true
 
 	app := &application{
+		debug:          *debug,
 		errorLog:       errorLog,
 		infoLog:        infoLog,
 		snippets:       &models.SnippetModel{DB: db},
