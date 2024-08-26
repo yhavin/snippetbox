@@ -103,74 +103,74 @@ func TestUserSignup(t *testing.T) {
 		wantFormTag  string
 	}{
 		{
-			name: "Valid submission",
-			userName: validName,
-			userEmail: validEmail,
+			name:         "Valid submission",
+			userName:     validName,
+			userEmail:    validEmail,
 			userPassword: validPassword,
-			csrfToken: validCSRFToken,
-			wantCode: http.StatusSeeOther,
+			csrfToken:    validCSRFToken,
+			wantCode:     http.StatusSeeOther,
 		},
 		{
-			name: "Invalid CSRF Token",
-			userName: validName,
-			userEmail: validEmail,
+			name:         "Invalid CSRF Token",
+			userName:     validName,
+			userEmail:    validEmail,
 			userPassword: validPassword,
-			csrfToken: "wrongToken",
-			wantCode: http.StatusBadRequest,
+			csrfToken:    "wrongToken",
+			wantCode:     http.StatusBadRequest,
 		},
 		{
-			name: "Empty name",
-			userName: "",
-			userEmail: validEmail,
+			name:         "Empty name",
+			userName:     "",
+			userEmail:    validEmail,
 			userPassword: validPassword,
-			csrfToken: validCSRFToken,
-			wantCode: http.StatusUnprocessableEntity,
-			wantFormTag: formTag,
+			csrfToken:    validCSRFToken,
+			wantCode:     http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 		{
-			name: "Empty email",
-			userName: validName,
-			userEmail: "",
+			name:         "Empty email",
+			userName:     validName,
+			userEmail:    "",
 			userPassword: validPassword,
-			csrfToken: validCSRFToken,
-			wantCode: http.StatusUnprocessableEntity,
-			wantFormTag: formTag,
+			csrfToken:    validCSRFToken,
+			wantCode:     http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 		{
-			name: "Empty password",
-			userName: validName,
-			userEmail: validEmail,
+			name:         "Empty password",
+			userName:     validName,
+			userEmail:    validEmail,
 			userPassword: "",
-			csrfToken: validCSRFToken,
-			wantCode: http.StatusUnprocessableEntity,
-			wantFormTag: formTag,
+			csrfToken:    validCSRFToken,
+			wantCode:     http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 		{
-			name: "Invalid email",
-			userName: validName,
-			userEmail: "bob@example.",
+			name:         "Invalid email",
+			userName:     validName,
+			userEmail:    "bob@example.",
 			userPassword: validPassword,
-			csrfToken: validCSRFToken,
-			wantCode: http.StatusUnprocessableEntity,
-			wantFormTag: formTag,
+			csrfToken:    validCSRFToken,
+			wantCode:     http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 		{
-			name: "Short password",
-			userName: validName,
-			userEmail: validEmail,
+			name:         "Short password",
+			userName:     validName,
+			userEmail:    validEmail,
 			userPassword: "pa$$",
-			csrfToken: validCSRFToken,
-			wantCode: http.StatusUnprocessableEntity,
-			wantFormTag: formTag,
+			csrfToken:    validCSRFToken,
+			wantCode:     http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 		{
-			name: "Duplicate email",
-			userName: validName,
-			userEmail: "dupe@example.com",
+			name:         "Duplicate email",
+			userName:     validName,
+			userEmail:    "dupe@example.com",
 			userPassword: validPassword,
-			csrfToken: validCSRFToken,
-			wantCode: http.StatusUnprocessableEntity,
-			wantFormTag: formTag,
+			csrfToken:    validCSRFToken,
+			wantCode:     http.StatusUnprocessableEntity,
+			wantFormTag:  formTag,
 		},
 	}
 
@@ -191,4 +191,34 @@ func TestUserSignup(t *testing.T) {
 			}
 		})
 	}
+}
+
+func TestSnippetCreate(t *testing.T) {
+	app := newTestApplication(t)
+	ts := newTestServer(t, app.routes())
+	defer ts.Close()
+
+	t.Run("Unauthenticated", func(t *testing.T) {
+		code, headers, _ := ts.get(t, "/snippet/create")
+
+		assert.Equal(t, code, http.StatusSeeOther)
+		assert.Equal(t, headers.Get("Location"), "/user/login")
+	})
+
+	t.Run("Authenticated", func(t *testing.T) {
+		_, _, body := ts.get(t, "/user/login")
+		csrfToken := extractCSRFToken(t, body)
+
+		form := url.Values{}
+		form.Add("email", "alice@example.com")
+		form.Add("password", "pa$$word")
+		form.Add("csrf_token", csrfToken)
+		code, _, _ := ts.postForm(t, "/user/login", form)
+
+		assert.Equal(t, code, http.StatusSeeOther)
+
+		code, _, body = ts.get(t, "/snippet/create")
+		assert.Equal(t, code, http.StatusOK)
+		assert.StringContains(t, body, `<form action="/snippet/create" method="POST">`)
+	})
 }
