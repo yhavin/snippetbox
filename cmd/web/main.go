@@ -40,11 +40,15 @@ func main() {
 	}
 
 	addr := flag.String("addr", ":4000", "HTTP network address")
+	dummyDbUser := os.Getenv("DUMMY_DB_USER")
 	dummyDbPassword := os.Getenv("DUMMY_DB_PASSWORD")
+	if dummyDbUser == "" {
+		errorLog.Fatal("DUMMY_DB_USER environment variable not set")
+	}
 	if dummyDbPassword == "" {
 		errorLog.Fatal("DUMMY_DB_PASSWORD environment variable not set")
 	}
-	dsn := flag.String("dsn", fmt.Sprintf("web:%s@/snippetbox?parseTime=true", dummyDbPassword), "MySQL data source name") // Dummy db password hardcoded
+	dsn := flag.String("dsn", fmt.Sprintf("%s:%s@/snippetbox?parseTime=true", dummyDbUser, dummyDbPassword), "MySQL data source name")
 
 	flag.Parse()
 
