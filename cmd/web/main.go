@@ -4,7 +4,6 @@ import (
 	"crypto/tls"
 	"database/sql"
 	"flag"
-	"fmt"
 	"html/template"
 	"log"
 	"net/http"
@@ -17,7 +16,6 @@ import (
 	"github.com/alexedwards/scs/v2"
 	"github.com/go-playground/form/v4"
 	_ "github.com/go-sql-driver/mysql"
-	"github.com/joho/godotenv"
 )
 
 type application struct {
@@ -35,22 +33,8 @@ func main() {
 	infoLog := log.New(os.Stdout, "INFO\t", log.Ldate|log.Ltime)
 	errorLog := log.New(os.Stderr, "ERROR\t", log.Ldate|log.Ltime|log.Lshortfile)
 
-	err := godotenv.Load()
-	if err != nil {
-		errorLog.Fatal(err)
-	}
-
 	addr := flag.String("addr", ":4000", "HTTP network address")
-
-	dummyDbUser := os.Getenv("DUMMY_DB_USER")
-	dummyDbPassword := os.Getenv("DUMMY_DB_PASSWORD")
-	if dummyDbUser == "" {
-		errorLog.Fatal("DUMMY_DB_USER environment variable not set")
-	}
-	if dummyDbPassword == "" {
-		errorLog.Fatal("DUMMY_DB_PASSWORD environment variable not set")
-	}
-	dsn := flag.String("dsn", fmt.Sprintf("%s:%s@/snippetbox?parseTime=true", dummyDbUser, dummyDbPassword), "MySQL data source name")
+	dsn := flag.String("dsn", "web:testpw123@/snippetbox?parseTime=true", "MySQL data source name")
 
 	debug := flag.Bool("debug", false, "Enable debug mode")
 
