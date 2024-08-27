@@ -28,17 +28,30 @@ Use the [`setup.sql`](./setup.sql) script, which will create the `snippetbox` da
 $ mysql -u root -p < setup.sql
 ```
 
+#### 5. Generate TLS certificates
+```shell
+$ mkdir tls
+$ cd tls
+$ go env GOROOT  # To find where your Go source code installed
+$ go run <YOUR_GOROOT_HERE>/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
+
+# For many users, this will be
+$ go run /usr/local/go/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
+OR
+$ go run /usr/local/Cellar/go/<version>/libexec/src/crypto/tls/generate_cert.go --rsa-bits=2048 --host=localhost
+```
+
 #### 5. Run the application
 ```shell
 # Build and then run
-$ go build -o snippetbox
+$ go build -o snippetbox ./cmd/web
 $ ./snippetbox
 
 # Run directly
 $ go run ./cmd/web
 ```
 
-Open your browser to [`https://localhost:4000`](https://localhost:4000) (must use HTTPS even though your browser will complain that it is not secure).
+Open your browser to [`https://localhost:4000`](https://localhost:4000). Your browser will complain that it is not secure, but proceed anyway: this warning is caused by the TLS certificate being self-signed. This is completely fine for development/local usage.
 
 ## MySQL setup
 #### 1. Install MySQL
